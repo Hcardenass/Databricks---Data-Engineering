@@ -15,9 +15,9 @@ create table detalle_pedido (idPedido INT, dni INT, idproducto STRING, monto dou
 comment 'Table save changes'
 tblproperties (delta.enablechangeDataFeed = true);
 
-
+-- ----------
 describe extended detalle_pedido
-
+-- ----------
 -- Insertar registros de ejemplo
 
 INSERT INTO detalle_pedido Values (1000, 7676, "PRO01", 1000);
@@ -27,7 +27,7 @@ INSERT INTO detalle_pedido Values (1001, 7678, "PRO05", 300);
 INSERT INTO detalle_pedido Values (1001, 7678, "PRO07", 600);
 INSERT INTO detalle_pedido Values (1001, 7678, "PRO08", 700);
 
-
+-- ----------
 select * from detalle_pedido
 
 -- ----------
@@ -47,10 +47,7 @@ select * from pedidos_ctas
 
 ------------
 
--- MAGIC %md
--- MAGIC ##Creacion de vista que se usara para actualizar tabla detalle_pedido
-
--- COMMAND ----------
+--##Creacion de vista que se usara para actualizar tabla detalle_pedido
 
 CREATE OR REPLACE TEMP VIEW temp_update_pedidos
     (idPedido COMMENT 'Id unico', dni, idproducto, monto)
@@ -60,16 +57,13 @@ CREATE OR REPLACE TEMP VIEW temp_update_pedidos
   (1001, 7678, "PRO05", 600),
   (1001, 7678, "PRO09", 100)
 
--- COMMAND ----------
+------------
 
 select * from temp_update_pedidos
 
--- COMMAND ----------
+-------------
 
--- MAGIC %md
--- MAGIC ##Actualizamos la tabla con un MERGE
-
--- COMMAND ----------
+-- ##Actualizamos la tabla con un MERGE
 
 MERGE INTO detalle_pedido dp
 USING temp_update_pedidos tdp
@@ -79,54 +73,32 @@ WHEN MATCHED
 WHEN NOT MATCHED
   THEN INSERT *
 
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC volvemos a ejecutar el select para comprobar de que los datos se modificaron
-
--- COMMAND ----------
+--  volvemos a ejecutar el select para comprobar de que los datos se modificaron
 
 select * from detalle_pedido
 
--- COMMAND ----------
+-- Una vez que se modificaron los datos ahora tenemos que actualizar el total de la tabla pedidos_ctas
 
--- MAGIC %md
--- MAGIC Una vez que se modificaron los datos ahora tenemos que actualizar el total de la tabla pedidos_ctas
-
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC ##Con table CTAS
-
--- COMMAND ----------
+--##Con table CTAS
 
 create or replace table pedidos_ctas location '/dbfs/FileStore/tables/external/pedidos_ctas'
 SELECT idPedido, dni, '09-12-2024' as fecha ,sum(monto) as total FROM detalle_pedido group by idPedido, dni, fecha 
 
--- COMMAND ----------
+------------
 
 select * from pedidos_ctas
 
--- COMMAND ----------
+ ------------
+ 
+--##Desarrollo de Preguntas
 
--- MAGIC %md
--- MAGIC ##Desarrollo de Preguntas
+--  ##1.Crear tabla con version anterior de pedidos 
 
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC ##1.Crear tabla con version anterior de pedidos 
-
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC Anter de crear , verificamos cuantas versiones tenemos 
-
--- COMMAND ----------
+--  Anter de crear , verificamos cuantas versiones tenemos 
 
 describe history pedidos_ctas
 
--- COMMAND ----------
+------------
 
 -- MAGIC %md
 -- MAGIC visualizamos la version 0 que es la que utilizaremos para crear la tabla
