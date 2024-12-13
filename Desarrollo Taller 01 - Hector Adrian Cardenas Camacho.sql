@@ -1,46 +1,24 @@
 -- Databricks notebook source
--- MAGIC %md
--- MAGIC #Taller 01
 
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC ##Creacion de esquema o base de datos
-
--- COMMAND ----------
+ --##Creacion de esquema o base de datos
 
 CREATE DATABASE datapath_taller01
 
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC Nos aseguramos de que usamos el esquema creado
-
--- COMMAND ----------
-
+--Nos aseguramos de que usamos el esquema creado
 use datapath_taller01
 
--- COMMAND ----------
 
--- MAGIC %md
--- MAGIC ##Creacion de primera tabla externa principal con enablechanged activado
+-- ##Creacion de primera tabla externa principal con enablechanged activado
 
--- COMMAND ----------
 
 create table detalle_pedido (idPedido INT, dni INT, idproducto STRING, monto double) location '/dbfs/user/hive/warehouse/datapath_taller01.db'
 comment 'Table save changes'
 tblproperties (delta.enablechangeDataFeed = true);
 
--- COMMAND ----------
 
 describe extended detalle_pedido
 
--- COMMAND ----------
-
--- MAGIC %md
--- MAGIC Insertar registros de ejemplo
-
--- COMMAND ----------
+-- Insertar registros de ejemplo
 
 INSERT INTO detalle_pedido Values (1000, 7676, "PRO01", 1000);
 INSERT INTO detalle_pedido Values (1000, 7676, "PRO02", 500);
@@ -49,29 +27,25 @@ INSERT INTO detalle_pedido Values (1001, 7678, "PRO05", 300);
 INSERT INTO detalle_pedido Values (1001, 7678, "PRO07", 600);
 INSERT INTO detalle_pedido Values (1001, 7678, "PRO08", 700);
 
--- COMMAND ----------
 
 select * from detalle_pedido
 
--- COMMAND ----------
+-- ----------
 
 select * from table_changes('datapath_taller01.detalle_pedido',0 )
 
--- COMMAND ----------
+--  ----------
 
--- MAGIC %md
--- MAGIC ##Creacion tabla CTAS
-
--- COMMAND ----------
+-- ##Creacion tabla CTAS
 
 create table pedidos_ctas location '/dbfs/FileStore/tables/external/pedidos_ctas'
 SELECT idPedido, dni, '09-12-2024' as fecha ,sum(monto) as total FROM detalle_pedido group by idPedido, dni, fecha 
 
--- COMMAND ----------
+-- ----------
 
 select * from pedidos_ctas
 
--- COMMAND ----------
+------------
 
 -- MAGIC %md
 -- MAGIC ##Creacion de vista que se usara para actualizar tabla detalle_pedido
